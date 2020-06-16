@@ -1,0 +1,45 @@
+{% extends 'df_user/base.html' %} 
+{% load static %} 
+	{% block head %} 
+	<script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script> 
+	<script type="text/javascript"> 
+		$(function(){ 
+			$(".add_goods").click(function(){ 
+				url = '/cart/add' + this.id + '_1'; 
+				$.get(url, function(data){ 
+					$("#show_count").text(data.count); 
+				}); 
+			}); 
+		}); 
+	</script> 
+	{% endblock head %}
+		
+		{%block sub-differ%}
+		<div class="right_content clearfix">
+			<div class="info_con clearfix">
+				<h3 class="common_title2">基本信息</h3>
+					<ul class="user_info_list">
+						<li><span>用户名：</span>{{user_name}}</li>
+						<li><span>联系方式：</span>{{user_phone}}</li>
+						<li><span>联系地址：</span>{{user_address}}</li>			
+					</ul>
+			</div>
+			<h3 class="common_title2">最近浏览</h3>
+			<div class="has_view_list">
+				<ul class="goods_type_list clearfix">
+					{%for good in goods_list%}
+					<li>
+						<a href="/goods/{{good.id}}"><img src="{{STATIC_URL}}{{good.gpic}}"></a>
+						<h4><a href="/goods/{{good.id}}">{{good.gtitle}}</a></h4>
+						<div class="operate">
+							<span class="prize">￥{{good.gunit}}</span>
+							<span class="unit">{{good.gprice}}</span>
+							<a href="javascript:;" id="{{good.id}}" class="add_goods" title="加入购物车"></a>
+						</div>
+					</li>
+					{%endfor%}
+					
+				</ul>
+			</div>
+		</div>
+		{% endblock sub-differ %}

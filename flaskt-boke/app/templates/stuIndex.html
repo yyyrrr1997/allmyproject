@@ -1,0 +1,52 @@
+{%extends 'base.html'%}
+{%import 'bootstrap/wtf.html' as wtf%}
+{%block content2%}
+<div class="page-header">
+
+	<div class="container">
+		
+		<table align="center" class="table table-bordered">
+			<caption>{{title}}</caption>
+		<thead>
+			<tr>
+				<th>姓名</th>
+				<th>年龄</th>
+			</tr>
+		</thead>
+		<tbody>
+			{%for name,age in stu%}
+			<tr>
+				<td>{{name}}</td>
+				<td>{{age}}</td>
+			</tr>
+			{%endfor%}
+		</tbody>
+		
+		</table>
+	</div>
+	<div class="container">
+		
+		{{wtf.quick_form(del_)}}
+		
+	</div>
+	<div class="container">
+		
+		{{wtf.quick_form(add_)}}
+		
+	</div>
+	<hr/>
+	
+	<hr/>
+	<div class="container">
+		
+		{{wtf.quick_form(alter_)}}
+		
+	</div>
+	<hr/>
+	<div class="container">
+		
+		{{wtf.quick_form(query_)}}
+		
+	</div>
+ </div>  
+{%endblock content2%}

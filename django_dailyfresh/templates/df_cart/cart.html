@@ -1,0 +1,176 @@
+{% extends 'base.html' %} 
+{% load static %}
+	{% block head %} 
+	<script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script> 
+	<script type="text/javascript"> 
+		$(function(){ 
+			// 调用计算总价的函数
+			calculateTotal(); 
+			// 勾选总开关 
+			$(".settlements").children(".col01").children("input").click(function(){ //当点击‘全选’ 复选框
+				if ($(this).prop("checked")) { //如果‘全选’选中
+					$(".cart_list_td").children(".col01").children("input").prop("checked", true); //所有商品的复选框设置选中
+				} 
+				else { 
+					$(".cart_list_td").children(".col01").children("input").prop("checked", false); //否则全不选
+				} 
+				// 重新计算总价 
+				calculateTotal(); 
+			}); 
+			// 勾选单个开关 
+			$(".cart_list_td").children(".col01").children("input").click(function(){ //当点击某个商品的复选框
+				// 计算当前有多少个复选框被选中 
+				selectedGood = $(".cart_list_td").children(".col01").children("input:checked").length; 
+				// 计算总共有多少个复选框 
+				countGood = $(".cart_list_td").children(".col01").children("input").length; 
+				// 如果全部选中 则勾选全选框的勾 
+				if (selectedGood == countGood) { 
+					$(".settlements").children(".col01").children("input").prop("checked", true); 
+				} 
+				else { 
+					$(".settlements").children(".col01").children("input").prop("checked", false); 
+				} 
+				// 重新计算总价 
+				calculateTotal(); 
+			}); 
+			// 点击增加按钮 
+			$(".add").click(function(){ 
+				element = $(this).next(); //下一个元素是输入框
+				count = parseInt(element.val()); //转整型（原为字符型）
+				if(count < 99) { 
+					count++; 
+				} 
+				element.val(count); //修改输入框的值
+
+				cart_id = $(this).parents('.cart_list_td').attr('id'); //attr() 方法设置或返回被选元素的属性和值。
+				url = '/cart/edit' + cart_id + '_' + count; 
+				$.get(url, function(data){ 
+					if(data.error == 1) { alert('发生了错误'); } 
+				});
+				// 重新计算总价 
+				calculateTotal(); 
+			}); 
+			// 点击减少按钮 
+			$(".minus").click(function(){ 
+				element = $(this).prev(); //上一个元素是输入框
+				count = parseInt(element.val()); 
+				if(count > 1) { 
+					count--;
+				} 
+				element.val(count); //修改输入框的值
+
+				//attr('id') 返回被选元素的id的值
+				cart_id = $(this).parents('.cart_list_td').attr('id'); 
+				url = '/cart/edit' + cart_id + '_' + count; 
+				$.get(url, function(data){ 
+					if(data.error == 1) { alert('发生了错误'); } 
+				});
+
+				// 重新计算总价 
+				calculateTotal(); 
+			}); 
+			// 直接修改数量并失去焦点 
+			$(".num_show").blur(function(){ 
+				element = $(this); //失去焦点的本输入框
+				count = parseInt(element.val()); 
+				if(count > 99) { count = 99; } 
+				if(count < 1) { count = 1; } 
+				element.val(count); //修改输入框的值
+
+				//attr('id') 返回被选元素的id的值
+				cart_id = $(this).parents('.cart_list_td').attr('id'); 
+				url = '/cart/edit' + cart_id + '_' + count; 
+				$.get(url, function(data){ 
+					if(data.error == 1) { alert('发生了错误'); } 
+				});
+				
+				// 重新计算总价 
+				calculateTotal(); 
+			});
+		}); 
+		// 删除商品 
+		function cart_del(cart_id) { 
+			ret = confirm("你确定要删除吗？"); 
+			if (ret) { 
+				url = '/cart/delete' + cart_id; 
+				$.get(url, function(data){ 
+					if(data.error == 0) { 
+						alert('删除成功'); 
+						$("ul").remove("#" + cart_id); 
+					} 
+				}); 
+			}
+		}
+		// 计算总价 
+		function calculateTotal() { 
+			var sumTotal = 0; // 商品总价钱 
+			var countGood = 0; // 商品总数量 
+			var Goodchecked=0; //已选商品数
+			//JQ函数 each() 方法为每个匹配元素规定要运行的函数。
+				// 参数1 index 当前是第几个class col07  标签
+				// 参数2 element 当前class col07 标签的完整的元素 
+			$(".col07").each(function(index, element){ 
+				// 获取数量 
+				count = $(element).prev().find('.num_show').val(); //在上一个标签中找子标签class num_show 的值
+				// 获取单价 
+				price = parseFloat($(element).prev().prev().text()); //parseFloat（）转浮点，将‘元’去掉了；找上上个标签的文本内容
+				// 小计
+				total = count * price; 
+				// 更新小计显示的内容 
+				$(element).text(total.toFixed(2) + '元'); 
+				// 计算总价钱和总数量 
+					//siblings() 方法返回被选元素的所有同级元素，选择其中的class col01————子标签input，返回属性checked的值
+					//如果checked存在，true，否则false
+				if($(element).siblings(".col01").find("input").prop("checked")) { //只有当商品复选框被选中的时候，商品小计才会加入到总价中，商品总数同理
+					sumTotal += total; 
+					Goodchecked++
+				} 
+				countGood++; 
+				// 更新显示的总价钱和总数量 
+				$("#sumtotal").text(sumTotal.toFixed(2)); 
+				$(".countGood").text(countGood); 
+				$(".Goodchecked").text(Goodchecked); 
+			}); 
+		} 
+
+	</script> 
+	{% endblock head %}
+
+	{% block body %} 
+	<div class="total_count">全部商品<em class="countGood">2</em>件</div>	
+	<ul class="cart_list_th clearfix">
+		<li class="col01">商品名称</li>
+		<li class="col02">商品单位</li>
+		<li class="col03">商品价格</li>
+		<li class="col04">数量</li>
+		<li class="col05">小计</li>
+		<li class="col06">操作</li>
+	</ul>
+	{%for cart in carts %}
+	<ul class="cart_list_td clearfix"  id="{{cart.id}}">
+		<li class="col01"><input type="checkbox" name="" checked></li>
+		<li class="col02"><img src="{{STATIC_URL}}{{cart.goods.gpic}}"></li>
+		<li class="col03">{{cart.goods.gtitle}}<br><em>{{cart.goods.gunit}}</em></li>
+		<li class="col04">500g</li>
+		<li class="col05" >{{cart.goods.gprice}}元</li>
+		<li class="col06">
+			<div class="num_add">
+				<a href="javascript:;" class="add fl">+</a>
+
+				<input type="text" class="num_show fl" " value="{{cart.count}}" >
+
+				<a href="javascript:;" class="minus fl">-</a>	
+			</div>
+		</li>
+		<li class="col07" >25.80元</li>
+		<li class="col08"><a href="javascript:cart_del({{cart.id}});">删除</a></li>
+	</ul>
+	{%endfor%}
+
+	<ul class="settlements">
+		<li class="col01"><input type="checkbox" name="" checked=""></li>
+		<li class="col02">全选</li>
+		<li class="col03" >合计(不含运费)：<span>¥</span><em id="sumtotal">42.60</em><br>共计<b class="Goodchecked">2</b>件商品</li>
+		<li class="col04"><a href="place_order.html">去结算</a></li>
+	</ul>
+	{% endblock body %} 
